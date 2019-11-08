@@ -4,18 +4,15 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 
 
 
 public class Main extends Application {
 	public void start(Stage stage) {
-		BorderPane root = new BorderPane();
-		GrapherCanvas gc =new GrapherCanvas(getParameters());
-		//Interaction i=new Interaction(gc);
-		root.setCenter(gc);
-		
+		Fenetre f = new Fenetre(getParameters());
 		stage.setTitle("grapher");
-		stage.setScene(new Scene(root));
+		stage.setScene(new Scene(f));
 		stage.show();
 	}
 	public static void main(String[] args) {

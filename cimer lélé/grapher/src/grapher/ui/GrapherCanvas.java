@@ -2,18 +2,22 @@ package grapher.ui;
 
 import static java.lang.Math.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javafx.util.converter.DoubleStringConverter;
 
 import javafx.application.Application.Parameters;
-
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 
 import javafx.scene.paint.Color;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.canvas.Canvas;
 
 
@@ -21,8 +25,6 @@ import grapher.fc.*;
 
 
 public class GrapherCanvas extends Canvas {
-	Interaction i;
-	
 	static final double MARGIN = 40;
 	static final double STEP = 5;
 
@@ -33,22 +35,34 @@ public class GrapherCanvas extends Canvas {
 	
 	protected double W = WIDTH;
 	protected double H = HEIGHT;
-
+	
+	protected ArrayList<Function> bold;
+	Interaction interaction;
+	
 	protected double xmin, xmax;
 	protected double ymin, ymax;
 
 	protected Vector<Function> functions = new Vector<Function>();
 	
-	public GrapherCanvas(Parameters params) {
+	public GrapherCanvas() {
 		super(WIDTH, HEIGHT);
+		bold = new ArrayList<Function>();
+		this.interaction = new Interaction(this);
+		this.addEventHandler(MouseEvent.ANY, this.interaction);
+		this.addEventHandler(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {
+
+			@Override
+			public void handle(ScrollEvent e) {
+				if (e.getEventType()==ScrollEvent.SCROLL) {
+					Point2D p = new Point2D(e.getX(), e.getY());
+					zoom(p,e.getDeltaY());
+				}
+			}
+			
+		});
 		xmin = -PI/2.; xmax = 3*PI/2;
 		ymin = -1.5;   ymax = 1.5;
-		i=new Interaction(this); //notre interaction
-		addEventHandler(MouseEvent.ANY, i); //on ajoute l'écoute sur les evenements 
 		
-		for(String param: params.getRaw()) {
-			functions.add(FunctionFactory.createFunction(param));
-		}
 	}
 	
 	public double minHeight(double width)  { return HEIGHT;}
@@ -63,7 +77,7 @@ public class GrapherCanvas extends Canvas {
 		redraw();
 	}	
 	
-	private void redraw() {
+	void redraw() {
 		GraphicsContext gc = getGraphicsContext2D();
 		W = getWidth();
 		H = getHeight();
@@ -114,8 +128,20 @@ public class GrapherCanvas extends Canvas {
 			for(int i = 0; i < N; i++) {
 				Ys[i] = Y(f.y(xs[i]));
 			}
+			if (!this.bold.isEmpty()) {
+				for (Function fb : this.bold) {
+					if (f.toString() == fb.toString()) {
+						gc.setLineWidth(2.0);
+					}else {
+						gc.setLineWidth(1.0);
+					}
+					gc.strokePolyline(Xs, Ys, N);
+				}
+			}else {
+				gc.strokePolyline(Xs, Ys, N);
+			}
 			
-			gc.strokePolyline(Xs, Ys, N);
+			
 		}
 		
 		gc.restore(); // restoring no clipping
@@ -133,7 +159,8 @@ public class GrapherCanvas extends Canvas {
 		for(double x = -xstep; x > xmin; x -= xstep) { drawXTick(gc, x); }
 		for(double y = ystep; y < ymax; y += ystep)  { drawYTick(gc, y); }
 		for(double y = -ystep; y > ymin; y -= ystep) { drawYTick(gc, y); }
-		
+				
+		interaction.drawFeedBack(gc);
 		gc.setLineDashes(null);
 	}
 	
