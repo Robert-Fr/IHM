@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 	public void start(Stage stage) {
-		Lecteur l = new Lecteur();
+		Lecteur l = new Lecteur(stage);
 		stage.setTitle("Player");
 		stage.setScene(new Scene(l));
 		stage.show();

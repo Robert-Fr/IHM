@@ -1,15 +1,23 @@
 package java_player.ui;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class Lecteur extends BorderPane{
 	
-	Lecteur(){
+	TreeTableView liste_musique;
+	
+	Lecteur(Stage stage){
 		//on construit par le bas :
 		//partie gauche :
 		HBox play_side_top=new HBox();
@@ -31,14 +39,51 @@ public class Lecteur extends BorderPane{
 		
 		
 		
-		
-	
-		
-		
 		//partie droite :
 		HBox liste=new HBox();
 		Button b1=new Button("|||");
-		Button b2= new Button(":=");
+		ToggleButton b2= new ToggleButton(":=");
+		//declaration de la liste de musique :
+		liste_musique=new TreeTableView<String>();
+		TreeTableColumn<String,String> col_nom= new TreeTableColumn("nom");
+		TreeTableColumn<String,String> col_auteur= new TreeTableColumn("auteur");
+		TreeTableColumn<String,String> col_duree= new TreeTableColumn("durée");
+		liste_musique.getColumns().setAll(col_nom,col_auteur,col_duree);
+		
+		
+		
+		b2.selectedProperty().addListener(new ChangeListener<Boolean>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Boolean> arg0, Boolean old_v, Boolean new_v) {
+				if (new_v) {
+					affichage_liste_musique();
+					stage.setHeight(500);
+					
+					stage.heightProperty().addListener(new ChangeListener<Number>() {
+
+						@Override
+						public void changed(ObservableValue<? extends Number> arg0, Number old_v, Number new_v) {
+						if ((double)new_v < 200) {
+							b2.setSelected(false);
+							masquage_liste_musique();
+						}
+							
+						}
+						
+					});
+					
+				}
+				else {
+					masquage_liste_musique();
+					stage.setHeight(200);
+				}
+				
+			}
+
+			
+		});
+		
 		liste.getChildren().addAll(b1,b2);
 		
 		Slider volume_slider=new Slider();
@@ -65,6 +110,13 @@ public class Lecteur extends BorderPane{
 		this.setRight(view_side);
 		
 	}
-	
+	public void masquage_liste_musique() {
+		this.setBottom(null);
+		
+	}
+
+	public void affichage_liste_musique() {
+		this.setBottom(liste_musique);
+	}
 	
 }
